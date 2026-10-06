@@ -1,0 +1,8 @@
+Package: com.jax.chromapatch
+Name: Chroma Plus Unlocker
+Version: 1.0.0
+Architecture: iphoneos-arm
+Description: Unlocks Chroma Plus features
+Maintainer: Jax
+Section: Tweaks
+Depends: mobilesubstrate, com.spotipw
