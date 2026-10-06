@@ -16,8 +16,7 @@ jobs:
       - name: Install prerequisites
         run: |
           sudo apt-get update -y
-          sudo apt-get install -y bash curl sudo fakeroot make git libplist-utils xz-utils libtinfo6
-          sudo ln -sf /usr/lib/x86_64-linux-gnu/libtinfo.so.6 /usr/lib/x86_64-linux-gnu/libtinfo.so.5
+          sudo apt-get install -y bash curl sudo fakeroot make git libplist-utils xz-utils cmake
 
       - name: Install Theos
         run: |
@@ -27,12 +26,9 @@ jobs:
 
       - name: Install toolchain
         run: |
-          curl -fsSL https://github.com/sbingner/llvm-project/releases/download/v10.0.0-1/linux-ios-arm64e-clang-toolchain.tar.lzma -o toolchain.tar.lzma
-          TMP=$(mktemp -d)
-          tar --lzma -xf toolchain.tar.lzma -C $TMP
-          mkdir -p $THEOS/toolchain/linux/iphone
-          mv $TMP/ios-arm64e-clang-toolchain/* $THEOS/toolchain/linux/iphone/
-          rm -rf toolchain.tar.lzma $TMP
+          mkdir -p $THEOS/toolchain/linux/iphone/bin
+          curl -fsSL https://github.com/CRKatri/llvm-project/releases/download/swift-5.3.2-RELEASE/swift-5.3.2-RELEASE-ubuntu20.04.tar.gz \
+            | sudo tar -xzf - -C $THEOS/toolchain/linux/iphone --strip-components=1
         env:
           THEOS: /opt/theos
 
