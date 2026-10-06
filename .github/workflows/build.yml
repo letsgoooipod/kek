@@ -16,7 +16,7 @@ jobs:
       - name: Install prerequisites
         run: |
           sudo apt-get update -y
-          sudo apt-get install -y bash curl sudo fakeroot make git libplist-utils
+          sudo apt-get install -y bash curl sudo fakeroot make git libplist-utils xz-utils
 
       - name: Install Theos
         run: |
@@ -46,8 +46,12 @@ jobs:
       - name: Install iOS SDK
         run: |
           mkdir -p $THEOS/sdks
-          curl -fsSL https://github.com/theos/sdks/releases/download/11700.0.0-4ca/iPhoneOS16.5.sdk.tar.xz \
-            | tar -xJf - -C $THEOS/sdks
+          curl -L https://github.com/theos/sdks/releases/latest/download/iPhoneOS16.5.sdk.tar.xz \
+            --output $THEOS/sdks/iPhoneOS16.5.sdk.tar.xz
+          cd $THEOS/sdks
+          xz -d iPhoneOS16.5.sdk.tar.xz
+          tar -xf iPhoneOS16.5.sdk.tar
+          rm iPhoneOS16.5.sdk.tar
         env:
           THEOS: /opt/theos
 
@@ -64,3 +68,4 @@ jobs:
           name: chromapatch-deb
           path: packages/*.deb
           retention-days: 30
+
