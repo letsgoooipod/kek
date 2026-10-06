@@ -13,17 +13,36 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y fakeroot curl git xz-utils
+
       - name: Install Theos
         run: |
-          sudo apt-get install -y fakeroot
-
           git clone --recursive https://github.com/theos/theos.git $THEOS
-          curl -fsSL https://github.com/theos/sdks/releases/latest/download/iPhoneOS16.5.sdk.tar.xz \
-            | tar -xJf - -C $THEOS/sdks
+        env:
+          THEOS: /opt/theos
 
-          curl -fsSL https://github.com/ProcursusTeam/ldid/releases/latest/download/ldid_linux_x86_64 \
-            -o $THEOS/bin/ldid
-          chmod +x $THEOS/bin/ldid
+      - name: Install toolchain
+        run: |
+          curl -fsSL https://github.com/kabiroberai/swift-toolchain-linux/releases/download/v2.3.0/swift-5.9-ubuntu22.04.tar.xz \
+            | sudo tar -xJf - -C /opt/theos/toolchain/linux/iphone --strip-components=1
+        env:
+          THEOS: /opt/theos
+
+      - name: Install iOS SDK
+        run: |
+          curl -fsSL https://github.com/theos/sdks/releases/download/11700.0.0-4ca/iPhoneOS16.5.sdk.tar.xz \
+            | sudo tar -xJf - -C /opt/theos/sdks
+        env:
+          THEOS: /opt/theos
+
+      - name: Install ldid
+        run: |
+          curl -fsSL https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus7/ldid_linux_x86_64 \
+            -o /opt/theos/bin/ldid
+          chmod +x /opt/theos/bin/ldid
         env:
           THEOS: /opt/theos
 
@@ -39,4 +58,3 @@ jobs:
           name: chromapatch-deb
           path: packages/*.deb
           retention-days: 30
-
