@@ -8,22 +8,35 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/theos/theos-builder:latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install Theos
+        run: |
+          sudo apt-get install -y fakeroot
+
+          git clone --recursive https://github.com/theos/theos.git $THEOS
+          curl -fsSL https://github.com/theos/sdks/releases/latest/download/iPhoneOS16.5.sdk.tar.xz \
+            | tar -xJf - -C $THEOS/sdks
+
+          curl -fsSL https://github.com/ProcursusTeam/ldid/releases/latest/download/ldid_linux_x86_64 \
+            -o $THEOS/bin/ldid
+          chmod +x $THEOS/bin/ldid
+        env:
+          THEOS: /opt/theos
+
       - name: Build .deb
         run: |
-          export THEOS=/opt/theos
-          export PATH=$THEOS/bin:$PATH
           make package FINALPACKAGE=1
+        env:
+          THEOS: /opt/theos
 
-      - name: Upload .deb artifact
+      - name: Upload .deb
         uses: actions/upload-artifact@v4
         with:
           name: chromapatch-deb
           path: packages/*.deb
           retention-days: 30
+
