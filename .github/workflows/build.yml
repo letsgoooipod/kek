@@ -16,7 +16,7 @@ jobs:
       - name: Install prerequisites
         run: |
           sudo apt-get update -y
-          sudo apt-get install -y bash curl sudo fakeroot make git libplist-utils xz-utils
+          sudo apt-get install -y bash curl sudo fakeroot make git libplist-utils xz-utils libtinfo5
 
       - name: Install Theos
         run: |
@@ -68,4 +68,5 @@ jobs:
           name: chromapatch-deb
           path: packages/*.deb
           retention-days: 30
+
 
