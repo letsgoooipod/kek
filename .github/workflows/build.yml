@@ -13,52 +13,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Install prerequisites
         run: |
           sudo apt-get update -y
-          sudo apt-get install -y fakeroot curl git xz-utils make
+          sudo apt-get install -y bash curl sudo fakeroot make
 
       - name: Install Theos
         run: |
-          git clone --recursive https://github.com/theos/theos.git $THEOS
+          bash -c "$(curl -fsSL https://raw.githubusercontent.com/theos/theos/master/bin/install-theos)"
         env:
           THEOS: /opt/theos
-
-      - name: Install toolchain
-        run: |
-          curl -fsSL https://github.com/theos/toolchain/releases/latest/download/linux-arm-toolchain.tar.xz \
-            | sudo tar -xJf - -C /opt/theos/toolchain/linux/iphone --strip-components=1
-        env:
-          THEOS: /opt/theos
-
-      - name: Install iOS SDK
-        run: |
-          mkdir -p /opt/theos/sdks
-          curl -fsSL https://github.com/theos/sdks/releases/latest/download/iPhoneOS16.5.sdk.tar.xz \
-            | sudo tar -xJf - -C /opt/theos/sdks
-        env:
-          THEOS: /opt/theos
-
-      - name: Install ldid
-        run: |
-          curl -fsSL https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus7/ldid_linux_x86_64 \
-            -o /opt/theos/bin/ldid
-          chmod +x /opt/theos/bin/ldid
-        env:
-          THEOS: /opt/theos
-
-      - name: Verify toolchain
-        run: |
-          ls /opt/theos/toolchain/linux/iphone/bin/
-          /opt/theos/toolchain/linux/iphone/bin/clang --version
-        env:
-          THEOS: /opt/theos
+          THEOS_SKIP_APPLE: 1
 
       - name: Build .deb
         run: |
+          export THEOS=/opt/theos
+          export PATH=$THEOS/bin:$PATH
           make package FINALPACKAGE=1
-        env:
-          THEOS: /opt/theos
 
       - name: Upload .deb
         uses: actions/upload-artifact@v4
@@ -66,4 +37,5 @@ jobs:
           name: chromapatch-deb
           path: packages/*.deb
           retention-days: 30
+
 
