@@ -32,6 +32,13 @@ jobs:
         run: |
           brew install make dpkg ldid
 
+      - name: Install iOS SDK
+        run: |
+          curl -L https://github.com/theos/sdks/releases/latest/download/iPhoneOS16.5.sdk.tar.xz \
+            --output /tmp/sdk.tar.xz
+          tar -xJf /tmp/sdk.tar.xz -C $THEOS/sdks
+          rm /tmp/sdk.tar.xz
+
       - name: Build .deb
         run: |
           gmake package FINALPACKAGE=1
