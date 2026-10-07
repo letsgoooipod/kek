@@ -5,59 +5,36 @@ on:
     branches: [main]
   workflow_dispatch:
 
+env:
+  THEOS: ${{ github.workspace }}/theos
+
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install prerequisites
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y bash curl sudo fakeroot make git libplist-utils xz-utils cmake
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
 
-      - name: Install Theos
-        run: |
-          git clone --recursive https://github.com/theos/theos.git $THEOS
-        env:
-          THEOS: /opt/theos
+      - name: Checkout Theos
+        uses: actions/checkout@v4
+        with:
+          repository: theos/theos
+          path: theos
+          submodules: recursive
 
-      - name: Install toolchain
+      - name: Install tools
         run: |
-          mkdir -p $THEOS/toolchain/linux/iphone/bin
-          curl -fsSL https://github.com/CRKatri/llvm-project/releases/download/swift-5.3.2-RELEASE/swift-5.3.2-RELEASE-ubuntu20.04.tar.gz \
-            | sudo tar -xzf - -C $THEOS/toolchain/linux/iphone --strip-components=1
-        env:
-          THEOS: /opt/theos
-
-      - name: Install ldid
-        run: |
-          curl -fsSL https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus7/ldid_linux_x86_64 \
-            -o $THEOS/bin/ldid
-          chmod +x $THEOS/bin/ldid
-        env:
-          THEOS: /opt/theos
-
-      - name: Install iOS SDK
-        run: |
-          mkdir -p $THEOS/sdks
-          curl -L https://github.com/theos/sdks/releases/latest/download/iPhoneOS16.5.sdk.tar.xz \
-            --output $THEOS/sdks/iPhoneOS16.5.sdk.tar.xz
-          cd $THEOS/sdks
-          xz -d iPhoneOS16.5.sdk.tar.xz
-          tar -xf iPhoneOS16.5.sdk.tar
-          rm iPhoneOS16.5.sdk.tar
-        env:
-          THEOS: /opt/theos
+          brew install make dpkg ldid
 
       - name: Build .deb
         run: |
-          export PATH=$THEOS/bin:$PATH
-          make package FINALPACKAGE=1
-        env:
-          THEOS: /opt/theos
+          gmake package FINALPACKAGE=1
 
       - name: Upload .deb
         uses: actions/upload-artifact@v4
@@ -65,6 +42,3 @@ jobs:
           name: chromapatch-deb
           path: packages/*.deb
           retention-days: 30
-
-
-
